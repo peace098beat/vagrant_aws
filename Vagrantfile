@@ -15,6 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     override.vm.hostname          = "vagrant-test"
     override.vm.box_url           = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
     override.vm.box               = "aws"
+
     override.ssh.private_key_path = ENV['AWS_SSH_KEY']
     override.ssh.pty              = false
 
@@ -23,12 +24,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     provider.keypair_name         = ENV['AWS_KEYPAIR_NAME']
 
     provider.region               = "ap-northeast-1"  # Tokyo
-    provider.availability_zone    = "ap-northeast-1c" # Tokyo
+    provider.availability_zone    = "ap-northeast-1a" # Tokyo
 
     override.ssh.username         = "ubuntu"
-    provider.ami                  = "ami-62edf205" # Ubuntu 16.04 LTS - Xenial (HVM)
-    # override.ssh.username         = "ec2-user"
-    # provider.ami                  = "ami-c9562fc8"    # Tokyo Amazon Linux AMI 2014.03 (64-bit)
+    provider.ami                  = "ami-785c491f" # Ubuntu 16.04 LTS - Xenial (HVM)
 
     provider.instance_type        = "t2.micro"
     provider.instance_ready_timeout = 120
@@ -54,16 +53,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                                     }]
 
     # enable these properties only if you plan not to use Default VPC
-    #provider.subnet_id            = ENV['AWS_SUBNET_ID']
-    #provider.private_ip_address   = "172.31.16.10"
-    #provider.elastic_ip           = true
+    provider.subnet_id            = ENV['AWS_SUBNET_ID']
+    # provider.private_ip_address   = "10.0.1.10"
+    # provider.elastic_ip           = true
+    provider.associate_public_ip = true
 
     # enable sudo without tty
     # NOTE: setting [ ssh.pty = true ] causes file provisioner fail
     provider.user_data = <<-USER_DATA
-#!/bin/sh
-echo "Defaults    !requiretty" > /etc/sudoers.d/vagrant-init
-chmod 440 /etc/sudoers.d/vagrant-init
+    #!/bin/sh
+    echo "Defaults    !requiretty" > /etc/sudoers.d/vagrant-init
+    chmod 440 /etc/sudoers.d/vagrant-init
+    echo "sudo shutdown -h now" | at now + 15minutes
     USER_DATA
 
     # disable synced_folder:
@@ -71,6 +72,11 @@ chmod 440 /etc/sudoers.d/vagrant-init
 
     # install some base packages
     config.vm.provision :shell, path: "bootstrap.sh"
+  end
+
+
+  config.vm.provision :configspec do |spec|
+    spec.pattern = 'configspec/*_spec.rb'
   end
 
 end
