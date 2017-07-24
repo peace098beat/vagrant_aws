@@ -27,9 +27,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     provider.availability_zone    = "ap-northeast-1a" # Tokyo
 
     override.ssh.username         = "ubuntu"
-    provider.ami                  = "ami-785c491f" # Ubuntu 16.04 LTS - Xenial (HVM)
+    # provider.ami                  = "ami-785c491f" # Ubuntu 16.04 LTS - Xenial (HVM)
+    provider.ami                  = "ami-aa5848cd" # Deep Learning AMI Ubuntu Version 14.04
 
-    provider.instance_type        = "t2.micro"
+    provider.instance_type        = "p2.xlarge"
     provider.instance_ready_timeout = 120
     provider.terminate_on_shutdown  = false
 
@@ -38,19 +39,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                                     ]
 
     provider.tags                 = {
-                                      "Name"        => "vagrant-test",
+                                      "Name"        => "vagrant-gpu-2",
                                       "Description" => "Boot from vagrant-aws",
                                     }
 
-    provider.block_device_mapping = [{
-                                      "DeviceName"              => "/dev/sda1",
-                                      "VirtualName"             => "VagrantDisk",
-                                      "Ebs.VolumeSize"          => "8",
-                                      "Ebs.DeleteOnTermination" => true,
-                                      "Ebs.VolumeType"          => "standard",
+    # provider.block_device_mapping = [{
+    #                                   "DeviceName"              => "/dev/sda1",
+    #                                   "VirtualName"             => "VagrantDisk",
+    #                                   "Ebs.VolumeSize"          => "8",
+    #                                   "Ebs.DeleteOnTermination" => true,
+    #                                   "Ebs.VolumeType"          => "standard",
                                      #"Ebs.VolumeType"          => "io1", # only if you choose PIOPS
                                      #"Ebs.Iops"                => 1000,  # only if you choose io1
-                                    }]
+                                    # }]
 
     # enable these properties only if you plan not to use Default VPC
     provider.subnet_id            = ENV['AWS_SUBNET_ID']
@@ -64,19 +65,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #!/bin/sh
     echo "Defaults    !requiretty" > /etc/sudoers.d/vagrant-init
     chmod 440 /etc/sudoers.d/vagrant-init
-    echo "sudo shutdown -h now" | at now + 15minutes
     USER_DATA
 
     # disable synced_folder:
-    override.vm.synced_folder "./", "/vagrant", disabled: true
+    override.vm.synced_folder "./data", "~/data", disabled: true
 
     # install some base packages
     config.vm.provision :shell, path: "bootstrap.sh"
   end
 
-
-  config.vm.provision :configspec do |spec|
-    spec.pattern = 'configspec/*_spec.rb'
-  end
 
 end
