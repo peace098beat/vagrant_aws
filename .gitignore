@@ -1,2 +1,3 @@
 .vagrant/
 .env
+aws_configure.sh

@@ -68,10 +68,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     USER_DATA
 
     # disable synced_folder:
-    override.vm.synced_folder "./data", "~/data", disabled: true
+    override.vm.synced_folder "./data", "/home/ubuntu/data", disabled: true
 
     # install some base packages
-    config.vm.provision :shell, path: "bootstrap.sh"
+    # config.vm.provision :shell, path: "bootstrap.sh"
   end
 
 
